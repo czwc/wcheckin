@@ -1,0 +1,26 @@
+# 防止公共仓库 60 天无活动被 GitHub 停用定时签到任务：
+# 每月 1 号自动推一个空 commit 刷新仓库活跃度
+name: Keepalive
+
+on:
+  schedule:
+    - cron: "0 3 1 * *" # UTC 03:00，北京时间 11:00，每月 1 号
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Empty commit keepalive
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: keepalive $(date -u +%Y-%m-%d)"
+          git push
