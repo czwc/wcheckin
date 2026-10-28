@@ -1,0 +1,31 @@
+name: WorkBuddy Daily Checkin
+
+on:
+  schedule:
+    # 北京时间 00:30（UTC 16:30）凌晨主跑
+    - cron: "30 16 * * *"
+    # 北京时间 08:30 补跑（GitHub 定时可能延迟/跳过，幂等脚本重复跑无副作用）
+    - cron: "30 0 * * *"
+  workflow_dispatch: {}   # 支持手动触发
+
+permissions:
+  contents: read
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run checkin
+        env:
+          WB_ACCESS_TOKEN: ${{ secrets.WB_ACCESS_TOKEN }}
+          WB_REFRESH_TOKEN: ${{ secrets.WB_REFRESH_TOKEN }}
+          WB_DOMAIN: ${{ secrets.WB_DOMAIN }}
+          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+        run: python checkin.py
